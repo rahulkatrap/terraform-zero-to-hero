@@ -110,14 +110,19 @@ resource "aws_security_group" "sq1" {
         protocol = "tcp"
         cidr_blocks = "0.0.0.0/0"
     }
-    ingress = {
+    ingress {
         from_port = 5000
         to_port = 5000
         protocol = "tcp"
-        cidr_block = "0.0.0.0/0"
+        cidr_blocks =  "0.0.0.0/0"
     }
-
-  
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"  
+        cidr_blocks = "0.0.0.0/0"
+         }
+    
 }
 resource "aws_lb" "my-lb" {
     name = "my-lb"
@@ -155,14 +160,11 @@ resource "aws_lb_listener" "lbl" {
     }
   
 }
-resource "aws_key_pair" "key" {
-    public_key = 
-  
-}
+
+
 resource "aws_instance" "in1" {
     ami = "ami-0f58b397bc5c1f2e8"
     instance_type = "t2-micro"
-    key_name = 
     subnet_id = aws_subnet.private1.id
     security_groups = [ aws_security_group.sq1.id ]
   
