@@ -10,24 +10,24 @@ resource "aws_vpc" "myvpc" {
 }
 resource "aws_subnet" "private1" {
     vpc_id = aws_vpc.myvpc.id
-    cidr_block = "0.0.1.0/24"
+    cidr_block = "10.0.1.0/24"
     availability_zone = "ap-south-1a"
   
 }
 resource "aws_subnet" "private2" {
     vpc_id = aws_vpc.myvpc.id
-    cidr_block = "0.0.2.0/24"
+    cidr_block = "10.0.2.0/24"
     availability_zone = "ap-south-1b"
 }
 resource "aws_subnet" "public1" {
     vpc_id = aws_vpc.myvpc.id
-    cidr_block = "0.0.3.0/24"
+    cidr_block = "10.0.3.0/24"
     availability_zone = "ap-south-1a"
     map_public_ip_on_launch = true
 }
 resource "aws_subnet" "public2" {
     vpc_id = aws_vpc.myvpc.id
-    cidr_block = "0.0.4.0/24"
+    cidr_block = "10.0.4.0/24"
     availability_zone = "ap-south-1b"
     map_public_ip_on_launch = true
 }
@@ -43,8 +43,13 @@ resource "aws_route_table" "t1" {
     }
    
 }
-resource "aws_route_table_association" "rt1" {
+resource "aws_route_table_association" "rtpub" {
     subnet_id = aws_subnet.public1.id
+    route_table_id = aws_route_table.t1.id
+  
+}
+resource "aws_route_table_association" "rtpub2" {
+    subnet_id = aws_subnet.public2.id
     route_table_id = aws_route_table.t1.id
   
 }
@@ -122,6 +127,11 @@ resource "aws_security_group" "sq1" {
          }
     
 }
+resource "aws_key_pair" "keypair" {
+    key_name = "terraform-keypair"
+    public_key = file("~/.ssh/id_rsa.pub")
+  
+}
 resource "aws_lb" "my-lb" {
     name = "my-lb"
     internal = false 
@@ -162,9 +172,16 @@ resource "aws_lb_listener" "lbl" {
 
 resource "aws_instance" "in1" {
     ami = "ami-0f58b397bc5c1f2e8"
-    instance_type = "t2-medium"
+    instance_type = "t2.medium"
     subnet_id = aws_subnet.private1.id
     security_groups = [ aws_security_group.sq1.id ]
+
+    connection {
+      type = "ssh"
+      user = "ubuntu"
+      private_key = file("~/ssh/id_rsa")
+      host = self.private_ip
+    }
     provisioner "remote-exec" {
         inline = [ 
             "sudo apt-get update -y",
@@ -172,14 +189,15 @@ resource "aws_instance" "in1" {
             "sudo git clone https://github.com/rahulkatrap/two-tier-app-deploy.git" ,
             "cd two-tier-app-deploy/ ",
             "sudo docker-compose up"
-         ]
+        ]
+
       
     }
   
 }
 resource "aws_instance" "inw" {
     ami = "ami-0f58b397bc5c1f2e8"
-    instance_type = "t2-micro"
+    instance_type = "t2.micro"
     subnet_id = aws_subnet.private2.id
     security_groups = [ aws_security_group.sq1.id ]
   
