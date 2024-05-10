@@ -23,11 +23,13 @@ resource "aws_subnet" "public1" {
     vpc_id = aws_vpc.myvpc.id
     cidr_block = "0.0.3.0/24"
     availability_zone = "ap-south-1a"
+    map_public_ip_on_launch = true
 }
 resource "aws_subnet" "public2" {
     vpc_id = aws_vpc.myvpc.id
     cidr_block = "0.0.4.0/24"
     availability_zone = "ap-south-1b"
+    map_public_ip_on_launch = true
 }
 resource "aws_internet_gateway" "ing" {
     vpc_id = aws_vpc.myvpc.id
@@ -160,8 +162,25 @@ resource "aws_lb_listener" "lbl" {
 
 resource "aws_instance" "in1" {
     ami = "ami-0f58b397bc5c1f2e8"
-    instance_type = "t2-micro"
+    instance_type = "t2-medium"
     subnet_id = aws_subnet.private1.id
+    security_groups = [ aws_security_group.sq1.id ]
+    provisioner "remote-exec" {
+        inline = [ 
+            "sudo apt-get update -y",
+            "sudo apt-get install docker-compose -y",
+            "sudo git clone https://github.com/rahulkatrap/two-tier-app-deploy.git" ,
+            "cd two-tier-app-deploy/ ",
+            "sudo docker-compose up"
+         ]
+      
+    }
+  
+}
+resource "aws_instance" "inw" {
+    ami = "ami-0f58b397bc5c1f2e8"
+    instance_type = "t2-micro"
+    subnet_id = aws_subnet.private2.id
     security_groups = [ aws_security_group.sq1.id ]
   
 }
