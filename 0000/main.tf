@@ -173,13 +173,14 @@ resource "aws_lb_listener" "lbl" {
 resource "aws_instance" "in1" {
     ami = "ami-0f58b397bc5c1f2e8"
     instance_type = "t2.medium"
+    key_name = aws_key_pair.keypair.key_name
     subnet_id = aws_subnet.private1.id
     security_groups = [ aws_security_group.sq1.id ]
 
     connection {
       type = "ssh"
       user = "ubuntu"
-      private_key = file("~/ssh/id_rsa")
+      private_key = file("~/.ssh/id_rsa")
       host = self.private_ip
     }
     provisioner "remote-exec" {
@@ -193,12 +194,5 @@ resource "aws_instance" "in1" {
 
       
     }
-  
-}
-resource "aws_instance" "inw" {
-    ami = "ami-0f58b397bc5c1f2e8"
-    instance_type = "t2.micro"
-    subnet_id = aws_subnet.private2.id
-    security_groups = [ aws_security_group.sq1.id ]
   
 }
