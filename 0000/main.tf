@@ -46,11 +46,7 @@ resource "aws_route_table_association" "rt1" {
     route_table_id = aws_route_table.t1.id
   
 }
-resource "aws_route_table_association" "rt1" {
-    subnet_id = aws_subnet.public2.id
-    route_table_id = aws_route_table.t1.id
-  
-}
+
 resource "aws_eip" "eip1" {
   
 }
@@ -102,25 +98,25 @@ resource "aws_security_group" "sq1" {
         from_port = 80
         to_port = 80
         protocol = "tcp"
-        cidr_blocks = "0.0.0.0/0"
+        cidr_blocks = ["0.0.0.0/0"]
     }
     ingress {
         from_port = 22
         to_port = 22
         protocol = "tcp"
-        cidr_blocks = "0.0.0.0/0"
+        cidr_blocks = ["0.0.0.0/0"]
     }
     ingress {
         from_port = 5000
         to_port = 5000
         protocol = "tcp"
-        cidr_blocks =  "0.0.0.0/0"
+        cidr_blocks = ["0.0.0.0/0"]
     }
     egress {
         from_port = 0
         to_port = 0
         protocol = "-1"  
-        cidr_blocks = "0.0.0.0/0"
+        cidr_blocks = ["0.0.0.0/0"]
          }
     
 }
@@ -133,7 +129,7 @@ resource "aws_lb" "my-lb" {
   
 }
 resource "aws_lb_target_group" "tg" {
-    name = tg 
+    name = "tg"
     port = 5000
     protocol = "HTTP"
     vpc_id = aws_vpc.myvpc.id
